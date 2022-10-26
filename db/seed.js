@@ -29,7 +29,9 @@ async function dropTables() {
     console.log("Starting to drop tables...");
 
     await client.query(`
+    DROP TABLE IF EXISTS posts;
     DROP TABLE IF EXISTS users;
+    
     `);
 
     console.log("Finished dropping tables!");
@@ -51,6 +53,16 @@ async function createTables() {
       password varchar(255) NOT NULL,
       name VARCHAR(255) NOT NULL,
       location VARCHAR(255) NOT NULL,
+      active BOOLEAN DEFAULT true
+      );
+    `);
+
+    await client.query(`
+    CREATE TABLE posts (
+      id SERIAL PRIMARY KEY,
+      "authorId" INTEGER REFERENCES users(id) NOT NULL,
+      title VARCHAR(255) NOT NULL,
+      content TEXT NOT NULL,
       active BOOLEAN DEFAULT true
       );
     `);

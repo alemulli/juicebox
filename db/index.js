@@ -55,12 +55,96 @@ async function updateUser(id, fields = {}) {
 }
 
 
+async function createPost ({
+  authorId,
+  title,
+  content
+}) {
+  try {
+    const {rows: [posts]} = await client.query(`
+    INSERT INTO posts("authorId", title, content)
+    VALUES($1, $2, $3)
+    RETURNING *;
+    `, [authorId, title, content]);
+
+
+    return posts;
+  } catch (error) {
+    throw error;
+  }
+}
+
+async function updatePost (id, {
+  title, 
+  content,
+  active
+}) {
+  try {
+    const {rows: [ posts ] } = await client.query(`
+    UPDATE posts
+    SET ${ setString}
+    WHERE id=${ id }
+    RETURNING *;
+    `, Object.values(fields));
+
+    return posts;
+
+  } catch (error) {
+    throw error;
+  }
+}
+
+async function getAllPosts () {
+  try {
+    const {rows} = await client.query(`
+    SELECT authorId, title, content
+    FROM posts;`)
+
+    return rows;
+
+  } catch (error) {
+    throw error;
+  }
+}
+
+async function getPostsByUser (userId) {
+  try {
+    const { rows } = await client.query(`
+    SELECT * FROM posts
+    WHERE "authorId"=${ userId };
+    `);
+    
+    return rows;
+  } catch (error) {
+    throw error;
+  }
+}
+
+async function getUserById(userId) {
+  const { rows: [ user ] } = await client.query(`
+    SELECT id, username, name, location, active
+    FROM users
+    WHERE id=${ userId }
+    RETURNING *;
+    `);
+    if (rows.length) {
+      const userPost = getPostsByUser(userId)
+      user['posts'] = userPost;
+      return user;
+    } else {return null}
+}
+
 
 module.exports = {
   client,
   getAllUsers,
   createUser, 
-  updateUser
+  updateUser,
+  createPost,
+  updatePost,
+  getAllPosts,
+  getPostsByUser,
+  getUserById
 }
 
 
