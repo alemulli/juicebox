@@ -3,6 +3,11 @@ const {
     getAllUsers, 
     createUser, 
     updateUser,
+    createPost,
+    updatePost,
+    getAllPosts,
+    getPostsByUser,
+    getUserById
 } = require('./index');
 
 // new function, should attempt to create a few users
@@ -22,6 +27,21 @@ async function createInitialUsers() {
         throw error;
     }
 }
+
+async function createInitialPosts() {
+    try {
+        const [albert, sandra, glamgal] = await getAllUsers();
+
+        await createPost({
+            authorId: albert.id,
+            title: "First Post", 
+            content: "This is my first post. I hope I love writing blogs as much as I love writing them."
+        });
+    } catch (error) {
+        throw error;
+    }
+}
+
 
 // this function should call a query which drops all tables from our database
 async function dropTables() {
@@ -81,6 +101,7 @@ async function rebuildDb() {
     await dropTables();
     await createTables();
     await createInitialUsers();
+    await createInitialPosts();
   } catch (error) {
     throw error;
   } 
@@ -92,7 +113,7 @@ async function testDB() {
 
     console.log("Calling getAllUsers")
     const users = await getAllUsers();
-    console.log("getAllUsers:", users);
+    console.log("Result:", users);
 
     console.log("Calling updateUser on users[0]")
     const updateUserResult = await updateUser(users[0].id, {
@@ -100,6 +121,21 @@ async function testDB() {
         location: "Lesterville, KY"
     });
     console.log("Result:", updateUserResult);
+
+    console.log("Calling getAllPosts");
+    const posts = await getAllPosts();
+    console.log("Posts result:", posts);
+    
+    console.log("Calling updatePost on posts[0]");
+    const updatePostResult = await updatePost(posts[0].id, {
+        title: "New Title", 
+        content: "Updated Content"
+    });
+    console.log("Result:", updatePostResult);
+
+    console.log("Calling getUserById with 1");
+    const albert = await getUserById(1);
+    console.log("Result:", albert);
 
     console.log("Finished database tests!");
   } catch (error) {
