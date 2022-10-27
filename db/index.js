@@ -109,11 +109,15 @@ async function updatePost (id, fields = {
 
 async function getAllPosts () {
   try {
-    const {rows} = await client.query(`
-    SELECT id, "authorId", title, content
+    const {rows: postIds} = await client.query(`
+    SELECT id
     FROM posts;`)
 
-    return rows;
+   const posts = await Promise.all(postIds.map(
+    post => getPostById( post.id)
+    ));
+
+    return posts;
 
   } catch (error) {
     throw error;
@@ -122,12 +126,17 @@ async function getAllPosts () {
 
 async function getPostsByUser (userId) {
   try {
-    const { rows } = await client.query(`
-    SELECT * FROM posts
+    const { rows: postIds } = await client.query(`
+    SELECT id
+    FROM posts
     WHERE "authorId"=${ userId };
     `);
-    
-    return rows;
+
+    const posts = await Promise.all(postIds.map(
+      post => getPostById( post.id )
+    ));
+
+    return posts;
   } catch (error) {
     throw error;
   }
