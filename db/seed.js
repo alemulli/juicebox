@@ -49,7 +49,7 @@ async function createInitialPosts() {
             authorId: sandra.id,
             title: "How does this work?",
             content: "Seriously, does this even do anything?",
-            tags: ["happy", "worst-day-ever"]
+            tags: ["#happy", "#worst-day-ever"]
         });
 
         await createPost({
