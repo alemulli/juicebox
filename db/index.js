@@ -63,45 +63,65 @@ async function updateUser(id, fields = {}) {
 async function createPost ({
   authorId,
   title,
-  content
+  content,
+  tags = []
 }) {
   try {
-    const {rows: [posts]} = await client.query(`
+    const {rows: [post]} = await client.query(`
     INSERT INTO posts("authorId", title, content)
     VALUES($1, $2, $3)
     RETURNING *;
     `, [authorId, title, content]);
 
+    const tagList = await createTags(tags);
 
-    return posts;
+
+    return await addTagsToPost(post.id, tagList);
+
   } catch (error) {
     throw error;
   }
 }
 
-async function updatePost (id, fields = {
-  title, 
-  content,
-  active
-})  {
+async function updatePost (postId, fields = {})  {
+
+  const {tags} = fields;
+  delete fields.tags;
+
     const setString = Object.keys(fields).map(
         (key, index) => `"${ key }"=$${ index + 1 }`
     ).join(', ');
 
-    if (setString.length === 0) {
-        return;
+    
+  try {
+    if(setString.length > 0) {
+      await client.query(`
+      UPDATE posts
+      SET ${ setString }
+      WHERE id=${ postId }
+      RETURNING *;
+      `, Object.values(fields));
     }
 
-  try {
-    const {rows: [ posts ] } = await client.query(`
-    UPDATE posts
-    SET ${ setString }
-    WHERE id=${ id }
-    RETURNING *;
-    `, Object.values(fields));
+    if (tags === undefined) {
+      return await getPostById(postId);
+    }
 
-    return posts;
+    const tagList = await createTags(tags);
+    const tagListIdString = tagList.map(
+      tag => `${ tag.id }`
+    ).join(', ');
 
+    await client.query(`
+    DELETE FROM post_tags
+    WHERE "tagId"
+    NOT IN (${tagListIdString})
+    AND "postId" = $1;
+    `, [postId]);
+
+    await addTagsToPost(postId, tagList);
+
+    return await getPostById(postId);
   } catch (error) {
     throw error;
   }
@@ -117,8 +137,8 @@ async function getAllPosts () {
     post => getPostById( post.id)
     ));
 
-    return posts;
 
+    return posts;
   } catch (error) {
     throw error;
   }
@@ -239,7 +259,7 @@ async function getPostById(postId) {
 
     post.tags = tags;
     post.author = author;
-
+ 
     delete post.authorId;
 
     return post;
