@@ -13,6 +13,7 @@ const {
     addTagsToPost,
     getPostById,
     getPostsByTagName,
+    getAllTags,
 } = require('./index');
 
 // new function, should attempt to create a few users
