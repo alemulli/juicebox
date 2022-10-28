@@ -19,11 +19,10 @@ tagsRouter.get('/', async (req, res) => {
 
 tagsRouter.get('/:tagName/posts', async (req, res, next) => {
     const { tagName } = req.params;
-    console.log(tagName, "this is the tagname")
 
     try {
         const posts = await getPostsByTagName(tagName)
-        console.log(posts)
+        
         res.send({
             posts
         })
