@@ -15,6 +15,7 @@ postsRouter.use((req, res, next) => {
   next();
 });
 
+//CREATE A POST//
 postsRouter.post("/", requireUser, async (req, res, next) => {
   const { title, content, tags = "" } = req.body;
 
@@ -42,6 +43,8 @@ postsRouter.post("/", requireUser, async (req, res, next) => {
   }
 });
 
+
+//GET ALL POSTS//
 postsRouter.get("/", async (req, res, next) => {
     try {
         const allPosts = await getAllPosts();
@@ -66,6 +69,7 @@ postsRouter.get("/", async (req, res, next) => {
     }
 });
 
+//EDIT A POST//
 postsRouter.patch('/:postId', requireUser, async (req, res, next) => {
     const { postId } = req.params;
     const { title, content, tags } = req.body;
@@ -101,6 +105,8 @@ postsRouter.patch('/:postId', requireUser, async (req, res, next) => {
     }
 });
 
+
+//DELETE A POST//
 postsRouter.delete('/:postId', requireUser, async (req, res , next) => {
   try {
     const post = await getPostById(req.params.postId);

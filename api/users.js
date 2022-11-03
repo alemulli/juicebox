@@ -2,7 +2,7 @@ const express = require('express');
 const usersRouter = express.Router();
 const jwt = require('jsonwebtoken');
 
-const { getAllUsers, getUserByUsername, createUser } = require('../db');
+const { getAllUsers, getUserByUsername, createUser, getUserById, getPostsByUser } = require('../db');
 
 usersRouter.use((req, res, next) => {
     console.log("A request is being made to /users");
@@ -10,6 +10,8 @@ usersRouter.use((req, res, next) => {
     next();
 });
 
+
+//GET ALL USERS//
 usersRouter.get('/', async (req, res) => {
     const users = await getAllUsers();
 
@@ -18,6 +20,7 @@ usersRouter.get('/', async (req, res) => {
     });
 });
 
+//LOGIN//
 usersRouter.post('/login', async (req, res, next) => {
     const { username, password } = req.body;
 
@@ -46,6 +49,8 @@ usersRouter.post('/login', async (req, res, next) => {
     }
 });
 
+
+//REGISTER//
 usersRouter.post('/register', async (req, res, next) => {
     const {username, password, name, location} = req.body;
 
@@ -81,5 +86,34 @@ usersRouter.post('/register', async (req, res, next) => {
         next({ name, message})
     }
 });
+
+//GET POSTS BY USER ID//
+usersRouter.get('/:userId/posts', async (req, res, next) => {
+    const { userId } = req.params;
+
+    try {
+        const userInfo = await getUserById(userId)
+        const allPosts = await getPostsByUser(userId)
+        
+        const posts = allPosts.filter(post => {
+            if (post.active) {
+                return true;
+            }
+
+            if (req.user && post.author.id === req.user.id) {
+                return true;
+            }
+
+            return false;
+        });
+
+        res.send({
+            userInfo,
+            posts
+        })
+    } catch ({ name, message }) {
+        next ({ name, message })
+    }
+})
 
 module.exports = usersRouter;
