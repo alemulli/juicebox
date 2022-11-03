@@ -93,23 +93,9 @@ usersRouter.get('/:userId/posts', async (req, res, next) => {
 
     try {
         const userInfo = await getUserById(userId)
-        const allPosts = await getPostsByUser(userId)
         
-        const posts = allPosts.filter(post => {
-            if (post.active) {
-                return true;
-            }
-
-            if (req.user && post.author.id === req.user.id) {
-                return true;
-            }
-
-            return false;
-        });
-
         res.send({
             userInfo,
-            posts
         })
     } catch ({ name, message }) {
         next ({ name, message })
